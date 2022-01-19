@@ -16,6 +16,11 @@ def shred_json(source_file_path,target_folder_path,object_name):
         print("1:Error - " + is_success )
         return "1:Error - " + is_success   
 
+    if object_name.find(" ")>0:
+        is_success = f"One word object names please. You provided:{object_name}. Acceptable:{object_name.replace(' ','')}"
+        print("1:Error - " + is_success)
+        return "1:Error - " + is_success
+
     try:
         json_df = pd.read_json(source_file_path)
         is_success = _shred_recursive(json_df,target_folder_path,object_name,object_name,object_name)
@@ -47,6 +52,11 @@ def shred_parquet(source_file_path,target_folder_path,object_name):
         is_success = 'Source Path Does Not Exist'
         print("1:Error - " + is_success )
         return "1:Error - " + is_success   
+
+    if object_name.find(" ")>0:
+        is_success = f"One word object names please. You provided:{object_name}. Acceptable:{object_name.replace(' ','')}"
+        print("1:Error - " + is_success)
+        return "1:Error - " + is_success
 
     try:
         json_df = pd.read_parquet(source_file_path)
