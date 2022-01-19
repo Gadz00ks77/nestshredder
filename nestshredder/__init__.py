@@ -50,7 +50,6 @@ def shred_parquet(filepath,targetpath,objname):
 
     try:
         json_df = pd.read_parquet(filepath)
-        print(json_df)
         is_success = _shred_recursive(json_df,targetpath,objname,objname,objname)
     except Exception as e:        
         is_success = str(e)
