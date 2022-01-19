@@ -5,3 +5,4 @@ test.py
 dist
 nestshredder.egg-info
 private
+cw_test.py
