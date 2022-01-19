@@ -2,3 +2,5 @@ target
 nestshredder/__pycache__
 .vscode
 test.py
+dist
+nestshredder.egg-info
