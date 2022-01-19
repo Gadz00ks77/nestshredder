@@ -34,7 +34,7 @@ PyPi via PipEnv or Pip itself. Up to you!
 
 The module exposes two functions at the moment;
 1. shred_json
-2. shred parquet
+2. shred_parquet
 
 Both accept:
 - source_file_path *- the source file path (e.g. './examples/test.json')*
@@ -42,7 +42,7 @@ Both accept:
 - object_name *- a simple string that you can use to identify the overall object represented by your data (e.g. Customers or Addresses). One word only please.*
 
 e.g.
-```
+```python
 import nestshredder as ns
 
 ns.shred_json('./examples/vsimple_example.json','./target','example')
