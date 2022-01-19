@@ -35,3 +35,28 @@ def shred_json(filepath,targetpath,objname):
         return "1:Error - " + is_success        
     else: 
         return "0:OK"
+
+def shred_parquet(filepath,targetpath,objname):
+
+    if os.path.exists(targetpath) == False:
+        is_success = 'Target Path Does Not Exist'
+        print("1:Error - " + is_success )
+        return "1:Error - " + is_success   
+
+    if os.path.exists(filepath) == False:
+        is_success = 'Source Path Does Not Exist'
+        print("1:Error - " + is_success )
+        return "1:Error - " + is_success   
+
+    try:
+        json_df = pd.read_parquet(filepath)
+        print(json_df)
+        is_success = _shred_recursive(json_df,targetpath,objname,objname,objname)
+    except Exception as e:        
+        is_success = str(e)
+
+    if is_success != "0":
+        print("1:Error - " + is_success )
+        return "1:Error - " + is_success        
+    else: 
+        return "0:OK"

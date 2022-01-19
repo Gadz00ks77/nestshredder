@@ -69,7 +69,7 @@ def _shred_recursive(source_df,target_path,source_file,source_name,parent_name):
         for nc in nested_cols:
             deliver_df = None
             deliver_df = pd.DataFrame(source_df[nc['col']])
-            _shred_recursive(source_df=deliver_df,source_file=source_file,source_name=nc['col'],parent_name=parent_name+'~'+source_name) ###
+            _shred_recursive(source_df=deliver_df,target_path=target_path,source_file=source_file,source_name=nc['col'],parent_name=parent_name+'~'+source_name) ###
             source_df.drop(columns=nc['col'],axis=1,inplace=True)
 
         if source_name == source_file:
