@@ -12,5 +12,6 @@ setup(
    author='Chris Woodward',
    author_email='chriswoodward77@googlemail.com',
    packages=['nestshredder'],  
-   install_requires=['pandas','pyarrow']
+   install_requires=['pandas','pyarrow'],
+   download_url='https://github.com/Gadz00ks77/nestshredder/archive/refs/tags/v0.2.tar.gz'
 )
