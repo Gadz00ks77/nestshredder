@@ -5,7 +5,7 @@ with open("readme.md", 'r') as f:
 
 setup(
    name='nestshredder',
-   version='0.1',
+   version='0.2',
    license='MIT',
    description='A useful thing that will take nested JSONS and output something a touch more SQL-sensible',
    long_description=long_description,
