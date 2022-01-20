@@ -2,7 +2,7 @@ import pandas as pd
 import os
 import json
 import sys
-from nestshredder.pyshred_core import _shred_recursive
+from nestshredder.pyshred_core import _shred_recursive, pad_dict_list
 
 def shred_json(source_file_path,target_folder_path,object_name):
 
@@ -32,9 +32,16 @@ def shred_json(source_file_path,target_folder_path,object_name):
                 new_list.append(data)
                 json_df = pd.DataFrame.from_dict(new_list)
                 is_success = _shred_recursive(json_df,target_folder_path,object_name,object_name,object_name)
+        elif str(e) == 'All arrays must be of the same length':  
+            new_list = []
+            with open(source_file_path) as json_file:
+                data = json.load(json_file)
+                new_list.append(data)
+                padded_list = pad_dict_list(new_list,'n/a')
+                json_df = pd.DataFrame.from_dict(padded_list)
+                is_success = _shred_recursive(json_df,target_folder_path,object_name,object_name,object_name)
         else:
             is_success = str(e)
-
     if is_success != "0":
         print("1:Error - " + is_success )
         return "1:Error - " + is_success        

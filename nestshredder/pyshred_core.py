@@ -4,6 +4,17 @@ import os
 import io
 import numpy as np
 
+def pad_dict_list(dict_list, padel):
+    lmax = 0
+    for d in dict_list:
+        for lname in d.keys():
+            lmax = max(lmax, len(d[lname]))
+        for lname in d.keys():
+            ll = len(d[lname])
+            if  ll < lmax:
+                d[lname] += [padel] * (lmax - ll)
+    return dict_list
+
 def _shred_recursive(source_df,target_path,source_file,source_name,parent_name):
 
     try:

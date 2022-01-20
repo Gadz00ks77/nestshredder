@@ -6,3 +6,4 @@ dist
 nestshredder.egg-info
 private
 cw_test.py
+examples/meds.json
