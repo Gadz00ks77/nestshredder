@@ -1,8 +1,8 @@
 import pandas as pd 
 from datetime import datetime 
 import os 
-import io
 import numpy as np
+import logging
 
 def pad_dict_list(dict_list, padel):
     lmax = 0
@@ -15,7 +15,7 @@ def pad_dict_list(dict_list, padel):
                 d[lname] += [padel] * (lmax - ll)
     return dict_list
 
-def _shred_recursive(source_df,target_path,source_file,source_name,parent_name):
+def _shred_recursive(source_df,target_path,source_file,source_name,parent_name,batch_ref=None):
 
     try:
 
@@ -98,11 +98,16 @@ def _shred_recursive(source_df,target_path,source_file,source_name,parent_name):
                 if source_df[col].dtype == list:
                     source_df[col] = source_df[col].astype(str)
 
-        source_df.to_parquet(f"{target_path}/{nodename}/{source_file}~{nodename}.parquet",index=True)
+        if batch_ref is None:
+            source_df.to_parquet(f"{target_path}/{nodename}/{source_file}~{nodename}.parquet",index=True)
+        else:
+            source_df.insert(0,'$batchref',batch_ref)
+            os.mkdir(f"{target_path}/{batch_ref}")
+            source_df.to_parquet(f"{target_path}/{batch_ref}/{nodename}/{source_file}~{nodename}.parquet",index=True)
 
         return str(0)
 
     except Exception as e:
-
+        logging.error('Error at recursive shredding core.')
         return e
 

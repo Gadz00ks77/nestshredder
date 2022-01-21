@@ -1,29 +1,34 @@
 import pandas as pd
+import logging
 import os
 import json
 import sys
 from nestshredder.pyshred_core import _shred_recursive, pad_dict_list
 
-def shred_json(source_file_path,target_folder_path,object_name):
+def check_arguments(source_file_path,target_folder_path,object_name):
 
     if os.path.exists(target_folder_path) == False:
-        is_success = 'Target Path Does Not Exist'
-        print("1:Error - " + is_success )
-        return "1:Error - " + is_success   
+        target_path_bad = 'Target Folder Path could not be found.'
+        logging.error(target_path_bad)
+        sys.exit()        
 
     if os.path.exists(source_file_path) == False:
-        is_success = 'Source Path Does Not Exist'
-        print("1:Error - " + is_success )
-        return "1:Error - " + is_success   
+        source_path_bad = 'Source File Path could not be found.'
+        logging.error(source_path_bad)
+        sys.exit() 
 
     if object_name.find(" ")>0:
-        is_success = f"One word object names please. You provided:{object_name}. Acceptable:{object_name.replace(' ','')}"
-        print("1:Error - " + is_success)
-        return "1:Error - " + is_success
+        whoops_obj_name = f"One word object names please. You provided:'{object_name}'. Hyphens and underscores are acceptable."
+        logging.error(whoops_obj_name)
+        sys.exit() 
+
+def shred_json(source_file_path,target_folder_path,object_name,batch_ref=None):
+
+    check_arguments(source_file_path,target_folder_path,object_name)
 
     try:
         json_df = pd.read_json(source_file_path)
-        is_success = _shred_recursive(json_df,target_folder_path,object_name,object_name,object_name)
+        shred_outcome = _shred_recursive(json_df,target_folder_path,object_name,object_name,object_name,batch_ref)
     except Exception as e:        
         if str(e) == 'If using all scalar values, you must pass an index':
             new_list = []
@@ -31,7 +36,7 @@ def shred_json(source_file_path,target_folder_path,object_name):
                 data = json.load(json_file)
                 new_list.append(data)
                 json_df = pd.DataFrame.from_dict(new_list)
-                is_success = _shred_recursive(json_df,target_folder_path,object_name,object_name,object_name)
+                shred_outcome = _shred_recursive(json_df,target_folder_path,object_name,object_name,object_name,batch_ref)
         elif str(e) == 'All arrays must be of the same length':  
             new_list = []
             with open(source_file_path) as json_file:
@@ -39,40 +44,30 @@ def shred_json(source_file_path,target_folder_path,object_name):
                 new_list.append(data)
                 padded_list = pad_dict_list(new_list,'n/a')
                 json_df = pd.DataFrame.from_dict(padded_list)
-                is_success = _shred_recursive(json_df,target_folder_path,object_name,object_name,object_name)
+                shred_outcome = _shred_recursive(json_df,target_folder_path,object_name,object_name,object_name,batch_ref)
         else:
-            is_success = str(e)
-    if is_success != "0":
-        print("1:Error - " + is_success )
-        return "1:Error - " + is_success        
+            shred_outcome = str(e)
+    if shred_outcome != "0":
+        logging.error(shred_outcome)
+        return        
     else: 
-        return "0:OK"
+        logging.info(f"Completed processing for object name: {object_name} at source file path: {source_file_path}")
+        return
 
-def shred_parquet(source_file_path,target_folder_path,object_name):
+def shred_parquet(source_file_path,target_folder_path,object_name,batch_ref=None):
 
-    if os.path.exists(target_folder_path) == False:
-        is_success = 'Target Path Does Not Exist'
-        print("1:Error - " + is_success )
-        return "1:Error - " + is_success   
-
-    if os.path.exists(source_file_path) == False:
-        is_success = 'Source Path Does Not Exist'
-        print("1:Error - " + is_success )
-        return "1:Error - " + is_success   
-
-    if object_name.find(" ")>0:
-        is_success = f"One word object names please. You provided:{object_name}. Acceptable:{object_name.replace(' ','')}"
-        print("1:Error - " + is_success)
-        return "1:Error - " + is_success
+    check_arguments(source_file_path,target_folder_path,object_name)
 
     try:
         json_df = pd.read_parquet(source_file_path)
-        is_success = _shred_recursive(json_df,target_folder_path,object_name,object_name,object_name)
+        shred_outcome = _shred_recursive(json_df,target_folder_path,object_name,object_name,object_name,batch_ref)
     except Exception as e:        
-        is_success = str(e)
+        logging.error(str(e))
+        return
 
-    if is_success != "0":
-        print("1:Error - " + is_success )
-        return "1:Error - " + is_success        
+    if shred_outcome != "0":
+        logging.error(shred_outcome)
+        return        
     else: 
-        return "0:OK"
+        logging.info(f"Completed processing for object name: {object_name} at source file path: {source_file_path}")
+        return
