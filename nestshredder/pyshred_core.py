@@ -80,7 +80,7 @@ def _shred_recursive(source_df,target_path,source_file,source_name,parent_name,b
         for nc in nested_cols:
             deliver_df = None
             deliver_df = pd.DataFrame(source_df[nc['col']])
-            _shred_recursive(source_df=deliver_df,target_path=target_path,source_file=source_file,source_name=nc['col'],parent_name=parent_name+'~'+source_name) ###
+            _shred_recursive(source_df=deliver_df,target_path=target_path,source_file=source_file,source_name=nc['col'],parent_name=parent_name+'~'+source_name,batch_ref=batch_ref) ###
             source_df.drop(columns=nc['col'],axis=1,inplace=True)
 
         if source_name == source_file:
@@ -88,8 +88,14 @@ def _shred_recursive(source_df,target_path,source_file,source_name,parent_name,b
 
         nodename = parent_name+'~'+source_name
 
-        if os.path.exists(f"{target_path}/{nodename}/") == False:
-            os.mkdir(f"{target_path}/{nodename}")
+        if batch_ref is None:
+            if os.path.exists(f"{target_path}/{nodename}/") == False:
+                os.mkdir(f"{target_path}/{nodename}")
+        else:
+            if os.path.exists(f"{target_path}/{batch_ref}/") == False:
+                os.mkdir(f"{target_path}/{batch_ref}")
+            if os.path.exists(f"{target_path}/{batch_ref}/{nodename}/") == False:
+                os.mkdir(f"{target_path}/{batch_ref}/{nodename}")
 
         for col in source_df.columns:
                 weird = (source_df[[col]].applymap(type) != source_df[[col]].iloc[0].apply(type)).any(axis=1)
@@ -102,7 +108,6 @@ def _shred_recursive(source_df,target_path,source_file,source_name,parent_name,b
             source_df.to_parquet(f"{target_path}/{nodename}/{source_file}~{nodename}.parquet",index=True)
         else:
             source_df.insert(0,'$batchref',batch_ref)
-            os.mkdir(f"{target_path}/{batch_ref}")
             source_df.to_parquet(f"{target_path}/{batch_ref}/{nodename}/{source_file}~{nodename}.parquet",index=True)
 
         return str(0)

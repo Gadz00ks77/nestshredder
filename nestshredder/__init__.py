@@ -1,30 +1,12 @@
 import pandas as pd
 import logging
-import os
 import json
-import sys
 from nestshredder.pyshred_core import _shred_recursive, pad_dict_list
-
-def check_arguments(source_file_path,target_folder_path,object_name):
-
-    if os.path.exists(target_folder_path) == False:
-        target_path_bad = 'Target Folder Path could not be found.'
-        logging.error(target_path_bad)
-        sys.exit()        
-
-    if os.path.exists(source_file_path) == False:
-        source_path_bad = 'Source File Path could not be found.'
-        logging.error(source_path_bad)
-        sys.exit() 
-
-    if object_name.find(" ")>0:
-        whoops_obj_name = f"One word object names please. You provided:'{object_name}'. Hyphens and underscores are acceptable."
-        logging.error(whoops_obj_name)
-        sys.exit() 
+from nestshredder.pyshred_util import check_arguments
 
 def shred_json(source_file_path,target_folder_path,object_name,batch_ref=None):
 
-    check_arguments(source_file_path,target_folder_path,object_name)
+    check_arguments(source_file_path,target_folder_path,object_name,batch_ref)
 
     try:
         json_df = pd.read_json(source_file_path)
@@ -56,7 +38,7 @@ def shred_json(source_file_path,target_folder_path,object_name,batch_ref=None):
 
 def shred_parquet(source_file_path,target_folder_path,object_name,batch_ref=None):
 
-    check_arguments(source_file_path,target_folder_path,object_name)
+    check_arguments(source_file_path,target_folder_path,object_name,batch_ref)
 
     try:
         json_df = pd.read_parquet(source_file_path)
