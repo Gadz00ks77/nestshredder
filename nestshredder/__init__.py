@@ -23,7 +23,7 @@ def shred_json(path_or_buf,target_folder_path,object_name,batch_ref=None,orient=
                     json_df = pd.DataFrame.from_dict(new_list)
                     shred_outcome = _shred_recursive(json_df,target_folder_path,object_name,object_name,object_name,batch_ref)
             except Exception as e:
-                if str(e) == 'expected str, bytes or os.PathLike object, not StringIO':
+                if str(e)[0:12] == 'expected str':
                     path_or_buf.seek(0)
                     data = json.loads(path_or_buf.read())
                     new_list.append(data)
@@ -35,12 +35,25 @@ def shred_json(path_or_buf,target_folder_path,object_name,batch_ref=None,orient=
                     return
         elif str(e) == 'All arrays must be of the same length':  
             new_list = []
-            with open(path_or_buf) as json_file:
-                data = json.load(json_file)
-                new_list.append(data)
-                padded_list = pad_dict_list(new_list,'n/a')
-                json_df = pd.DataFrame.from_dict(padded_list)
-                shred_outcome = _shred_recursive(json_df,target_folder_path,object_name,object_name,object_name,batch_ref)
+            try:
+                with open(path_or_buf) as json_file:
+                    data = json.load(json_file)
+                    new_list.append(data)
+                    padded_list = pad_dict_list(new_list,'n/a')
+                    json_df = pd.DataFrame.from_dict(padded_list)
+                    shred_outcome = _shred_recursive(json_df,target_folder_path,object_name,object_name,object_name,batch_ref)
+            except Exception as e:
+                # logging.info(str(e)[0:12])
+                if str(e)[0:12] == 'expected str':
+                    path_or_buf.seek(0)
+                    data = json.loads(path_or_buf.read())
+                    new_list.append(data)
+                    json_df = pd.DataFrame.from_dict(new_list)
+                    shred_outcome = _shred_recursive(json_df,target_folder_path,object_name,object_name,object_name,batch_ref)
+                else:
+                    shred_outcome = str(e)
+                    logging.error(shred_outcome)
+                    return
         else:
             shred_outcome = str(e)
     if shred_outcome != "0":
