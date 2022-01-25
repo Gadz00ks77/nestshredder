@@ -10,3 +10,5 @@ examples/meds.json
 .metals/metals.h2.db
 .metals/metals.log
 examples/subm.snappy.parquet
+examples/bigger_example.json
+example.log

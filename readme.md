@@ -10,6 +10,7 @@ Nest Shredder is a pandas-wrapper utility for converting nested JSON or Parquet 
 - Names the parquet files based on the path of the nested data
 - Adds some id columns for relational integrity from source objects
 - Shred functions accept a batch identifier for output metadata.
+- Supports standard path or file-like inputs of Pandas for read_json / read_parquet methods.
 
 ## Doesn't Feature(s)
 
@@ -17,7 +18,6 @@ Nest Shredder is a pandas-wrapper utility for converting nested JSON or Parquet 
 - No (output to) CSV or JSON at the moment. Simple add, will do later.
 - No compression on the output Parquet as standard. Will add later.
 - Support for other Parquet libraries. May be later.
-- Support for file object in buffer inputs, rather than folder file paths. Useful - will add soon.
 - Represent the full path in the parquet output to account for people naming child objects the same thing repeatedly. Will add later and burst into tears. Model your data properly.
 
 ## Tech

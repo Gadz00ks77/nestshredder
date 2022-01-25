@@ -1,27 +1,41 @@
+from numpy import dtype
 import pandas as pd
 import logging
 import json
+from io import StringIO
 from nestshredder.pyshred_core import _shred_recursive, pad_dict_list
 from nestshredder.pyshred_util import check_arguments
 
-def shred_json(source_file_path,target_folder_path,object_name,batch_ref=None):
+def shred_json(path_or_buf,target_folder_path,object_name,batch_ref=None,orient=None,dtype=None,convert_axes=None,convert_dates=True,keep_default_dates=True,precise_float=False,date_unit=None,encoding=None,encoding_errors='strict',lines=False,chunksize=None,compression='infer',nrows=None,storage_options=None):
 
-    check_arguments(source_file_path,target_folder_path,object_name,batch_ref)
+    check_arguments(target_folder_path=target_folder_path,object_name=object_name,batch_ref=batch_ref)
 
     try:
-        json_df = pd.read_json(source_file_path)
+        json_df = pd.read_json(path_or_buf,orient=orient,dtype=dtype,convert_axes=convert_axes,convert_dates=convert_dates,keep_default_dates=keep_default_dates,precise_float=precise_float,date_unit=date_unit,encoding=encoding,encoding_errors=encoding_errors,lines=lines,chunksize=chunksize,compression=compression,nrows=nrows,storage_options=storage_options)
         shred_outcome = _shred_recursive(json_df,target_folder_path,object_name,object_name,object_name,batch_ref)
     except Exception as e:        
         if str(e) == 'If using all scalar values, you must pass an index':
             new_list = []
-            with open(source_file_path) as json_file:
-                data = json.load(json_file)
-                new_list.append(data)
-                json_df = pd.DataFrame.from_dict(new_list)
-                shred_outcome = _shred_recursive(json_df,target_folder_path,object_name,object_name,object_name,batch_ref)
+            try:
+                with open(path_or_buf) as json_file:
+                    data = json.load(json_file)
+                    new_list.append(data)
+                    json_df = pd.DataFrame.from_dict(new_list)
+                    shred_outcome = _shred_recursive(json_df,target_folder_path,object_name,object_name,object_name,batch_ref)
+            except Exception as e:
+                if str(e) == 'expected str, bytes or os.PathLike object, not StringIO':
+                    path_or_buf.seek(0)
+                    data = json.loads(path_or_buf.read())
+                    new_list.append(data)
+                    json_df = pd.DataFrame.from_dict(new_list)
+                    shred_outcome = _shred_recursive(json_df,target_folder_path,object_name,object_name,object_name,batch_ref)
+                else:
+                    shred_outcome = str(e)
+                    logging.error(shred_outcome)
+                    return
         elif str(e) == 'All arrays must be of the same length':  
             new_list = []
-            with open(source_file_path) as json_file:
+            with open(path_or_buf) as json_file:
                 data = json.load(json_file)
                 new_list.append(data)
                 padded_list = pad_dict_list(new_list,'n/a')
@@ -33,16 +47,16 @@ def shred_json(source_file_path,target_folder_path,object_name,batch_ref=None):
         logging.error(shred_outcome)
         return        
     else: 
-        logging.info(f"Completed processing for object name: {object_name} at source file path: {source_file_path}")
+        logging.info(f"Completed processing for object name: {object_name}")
         return
 
-def shred_parquet(source_file_path,target_folder_path,object_name,batch_ref=None):
+def shred_parquet(path_or_buf,target_folder_path,object_name,batch_ref=None,columns=None):
 
-    check_arguments(source_file_path,target_folder_path,object_name,batch_ref)
+    check_arguments(target_folder_path,object_name,batch_ref)
 
     try:
-        json_df = pd.read_parquet(source_file_path)
-        shred_outcome = _shred_recursive(json_df,target_folder_path,object_name,object_name,object_name,batch_ref)
+        parquet_df = pd.read_parquet(path_or_buf,columns=columns)
+        shred_outcome = _shred_recursive(parquet_df,target_folder_path,object_name,object_name,object_name,batch_ref)
     except Exception as e:        
         logging.error(str(e))
         return
@@ -51,5 +65,5 @@ def shred_parquet(source_file_path,target_folder_path,object_name,batch_ref=None
         logging.error(shred_outcome)
         return        
     else: 
-        logging.info(f"Completed processing for object name: {object_name} at source file path: {source_file_path}")
+        logging.info(f"Completed processing for object name: {object_name}.")
         return
