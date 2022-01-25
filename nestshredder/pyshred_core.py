@@ -24,7 +24,7 @@ def _shred_recursive(source_df,target_path,source_file,source_name,parent_name,b
 
         if source_name != source_file:
             explode_df = source_df.explode(source_name)
-            new_df = explode_df[source_name].apply(pd.Series)
+            new_df = explode_df[source_name].apply(pd.Series,convert_dtype=False,dtype=object)
             source_df = new_df
             if len(source_df.columns) ==1: ##if the source is generated from an array then correct for the 'zero' column. Parquet doesn't like it.
                 if 0 in source_df.columns:
@@ -53,8 +53,7 @@ def _shred_recursive(source_df,target_path,source_file,source_name,parent_name,b
 
         for dc in dict_cols:
             part_df = None
-            part_df = source_df[dc].apply(pd.Series)
-            
+            part_df = source_df[dc].apply(pd.Series,convert_dtype=False,dtype=object)
             list_old_cols = []
             list_old_cols = part_df.columns.tolist()
             list_new_cols = []

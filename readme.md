@@ -38,7 +38,7 @@ The module exposes two functions at the moment;
 2. shred_parquet
 
 Both accept:
-- path_or_buff *- the source file path (e.g. './examples/test.json' or a BytesIO file object)*
+- path_or_buff *- the source file path (e.g. './examples/test.json') or a BytesIO-like file object*
 - target_folder_path *- the path where you would like your flattened / unnested outputs. New folders will be created in here, using:*
 - object_name *- a simple string that you can use to identify the overall object represented by your data (e.g. Customers or Addresses). One word only please.*
 
@@ -47,6 +47,15 @@ e.g.
 import nestshredder as ns
 
 ns.shred_json('./examples/vsimple_example.json','./target','example')
+```
+
+- added a batch_ref identifier to further describe the object you're shredding.
+
+e.g.
+```python
+import nestshredder as ns
+
+ns.shred_json('./examples/vsimple_example.json','./target','example','ABC123')
 ```
 
 - shred_json also exposes most of the read_json Pandas stuff too in case you need it.
