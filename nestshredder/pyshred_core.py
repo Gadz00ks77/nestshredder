@@ -1,8 +1,10 @@
+from distutils.errors import CompileError
 import pandas as pd 
 from datetime import datetime 
 import os 
 import numpy as np
 import logging
+import csv
 
 def pad_dict_list(dict_list, padel):
     lmax = 0
@@ -15,7 +17,7 @@ def pad_dict_list(dict_list, padel):
                 d[lname] += [padel] * (lmax - ll)
     return dict_list
 
-def _shred_recursive(source_df,target_path,source_file,source_name,parent_name,batch_ref=None):
+def _shred_recursive(source_df,target_path,source_file,source_name,parent_name,batch_ref=None,output_method=None):
 
     try:
 
@@ -79,7 +81,7 @@ def _shred_recursive(source_df,target_path,source_file,source_name,parent_name,b
         for nc in nested_cols:
             deliver_df = None
             deliver_df = pd.DataFrame(source_df[nc['col']])
-            _shred_recursive(source_df=deliver_df,target_path=target_path,source_file=source_file,source_name=nc['col'],parent_name=parent_name+'~'+source_name,batch_ref=batch_ref) ###
+            _shred_recursive(source_df=deliver_df,target_path=target_path,source_file=source_file,source_name=nc['col'],parent_name=parent_name+'~'+source_name,batch_ref=batch_ref,output_method=output_method) ###
             source_df.drop(columns=nc['col'],axis=1,inplace=True)
 
         if source_name == source_file:
@@ -104,10 +106,10 @@ def _shred_recursive(source_df,target_path,source_file,source_name,parent_name,b
                     source_df[col] = source_df[col].astype(str)
 
         if batch_ref is None:
-            source_df.to_parquet(f"{target_path}/{nodename}/{source_file}~{nodename}.parquet",index=True)
+            output_df(output_method,source_df,target_path,batch_ref,nodename,source_file,compression=None)
         else:
             source_df.insert(0,'$batchref',batch_ref)
-            source_df.to_parquet(f"{target_path}/{batch_ref}/{nodename}/{source_file}~{nodename}.parquet",index=True)
+            output_df(output_method,source_df,target_path,batch_ref,nodename,source_file,compression=None)
 
         return str(0)
 
@@ -115,3 +117,27 @@ def _shred_recursive(source_df,target_path,source_file,source_name,parent_name,b
         logging.error('Error at recursive shredding core.')
         return e
 
+def output_df(method,source_df,target_path,batch_ref,nodename,source_file,compression=None):
+
+    try:
+
+        if method == 'parquet' or method is None:
+            if compression is None:
+                source_df.to_parquet(f"{target_path}/{batch_ref}/{nodename}/{source_file}~{nodename}.parquet",index=True)
+            elif compression in ['snappy', 'gzip', 'brotli']:
+                source_df.to_parquet(f"{target_path}/{batch_ref}/{nodename}/{source_file}~{nodename}.parquet",index=True,compression=compression)
+            else:
+                logging.error(f"Invalid output compression '{compression}' defined.")
+        
+        if method == 'json':
+            if compression is not None:
+                logging.warn(f"Output compression {compression} not supported for JSON at this time.")
+            source_df.to_json(path_or_buf=f"{target_path}/{batch_ref}/{nodename}/{source_file}~{nodename}.json",index=True,orient='records')
+
+        if method == 'csv':
+            if compression is not None:
+                logging.warn(f"Output compression {compression} not supported for CSV at this time.")
+            source_df.to_csv(path_or_buf=f"{target_path}/{batch_ref}/{nodename}/{source_file}~{nodename}.csv",index=True,sep='|',header=True,quoting=csv.QUOTE_NONNUMERIC)
+    except Exception as e:
+        logging.error('Error at shred output.')
+        return e
