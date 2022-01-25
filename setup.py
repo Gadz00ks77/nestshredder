@@ -5,7 +5,7 @@ with open("README.md", 'r') as f:
 
 setup(
    name='nestshredder',
-   version='0.5.2',
+   version='0.5.3',
    license='MIT',
    description='A useful thing that will take nested JSONS and output something a touch more SQL-sensible',
    long_description_content_type='text/markdown',
@@ -15,5 +15,5 @@ setup(
    packages=['nestshredder'],  
    install_requires=['pandas','pyarrow'],
    url='https://github.com/Gadz00ks77/nestshredder/',
-   download_url='https://github.com/Gadz00ks77/nestshredder/archive/refs/tags/v0.5.2.tar.gz'
+   download_url='https://github.com/Gadz00ks77/nestshredder/archive/refs/tags/v0.5.3.tar.gz'
 )
