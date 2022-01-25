@@ -13,12 +13,19 @@ Nest Shredder is a pandas-wrapper utility for converting nested JSON or Parquet 
 - Supports standard path or file-like inputs of Pandas for read_json / read_parquet methods.
 - Defaults to Parquet output type but will output to JSON / CSV (no compression supported on these latter two at the moment).
 
+## Will Soon Feature
+- No compression on the output Parquet as standard. Will add later.
+- A way to push each result file Parquet back to an S3 bucket or similar. Useful. Will add later.
+- Expose the config options for CSV generation. May be.
+- Support for other Parquet libraries. May be later.
+- Represent the full path in the parquet output to account for people naming child objects the same thing repeatedly. Will add later and burst into tears. Model your data properly.
+
+
 ## Doesn't Feature(s)
 
 - If you shred the same JSON object twice that has a nested array of objects it doesn't guarantee the order for each shred-time (but the ids will be valid for the run). Get yourself a key on that object! :) 
-- No compression on the output Parquet as standard. Will add later.
-- Support for other Parquet libraries. May be later.
-- Represent the full path in the parquet output to account for people naming child objects the same thing repeatedly. Will add later and burst into tears. Model your data properly.
+
+
 
 ## Tech
 
@@ -31,7 +38,7 @@ Nest Shredder uses a couple of open source projects to work properly:
 
 PyPi via PipEnv or Pip itself. Up to you!
 
-## Usage
+## Simple Usage
 
 The module exposes two functions at the moment;
 1. shred_json
@@ -59,6 +66,29 @@ ns.shred_json('./examples/vsimple_example.json','./target','example','ABC123')
 ```
 
 - shred_json also exposes most of the read_json Pandas stuff too in case you need it.
+
+
+## Other Usage Nodes (S3 etc)
+
+As with Pandas - you can read a file from S3 and pass it to one of the shred functions as a Streaming object. e.g.
+
+```python
+import nestshredder as ns
+import boto3
+
+s3 = boto3.client('s3')
+bucket='marvellous-bucket-name-here'
+data = s3.get_object(Bucket=bucket, Key='s3foldername/file.json')
+contents = data['Body']
+ns.shred_json( path_or_buf=contents,
+               target_folder_path='./targets',
+               object_name='objname',
+               batch_ref='ABCD1246325'
+               )
+```
+
+## Known Limitations
+At the moment this uses a recursion - which is not wonderful. I'll work to refactor over the coming ... days? 
 
 ## License
 
